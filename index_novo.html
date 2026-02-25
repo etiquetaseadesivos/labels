@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catálogo de Rótulos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="brand">
+        <img id="logoImg" alt="Etiquetas & Adesivos" src="" />
+      </div>
+
+      <div class="search">
+        <input id="search" type="search" placeholder="Pesquisar nome, categoria, formato ..." />
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M21 21l-4.3-4.3"></path>
+        </svg>
+      </div>
+
+      <div class="cartCircle" id="cartBtn" aria-label="Carrinho">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 6h15l-2 9H8L6 6Z"></path>
+          <path d="M6 6L5 3H2"></path>
+          <circle cx="9" cy="20" r="1"></circle>
+          <circle cx="18" cy="20" r="1"></circle>
+        </svg>
+        <div class="badge" id="cartCount">0</div>
+      </div>
+    </div>
+
+    <div class="formatBar">
+      <div class="formatLabel">FORMATO</div>
+      <div class="formatTabs" id="formatTabs"></div>
+    </div>
+
+    <div class="bannerWrap">
+      <div class="banner" id="banner">
+        <a id="bannerLink" href="#" style="display:block;width:100%;height:100%;">
+          <img id="bannerImg" alt="Banner" src="" />
+        </a>
+
+        <div class="bannerNav">
+          <button class="bannerBtn" id="bannerPrev" aria-label="Anterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="bannerBtn" id="bannerNext" aria-label="Próximo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <div class="dots" id="bannerDots"></div>
+      </div>
+    </div>
+
+    <div class="personalBar">
+      <div class="label">Para personalização, nos informe:</div>
+
+      <div class="pfield">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07A19.5 19.5 0 0 1 3.15 10.8 19.86 19.86 0 0 1 .08 2.18 2 2 0 0 1 2.06 0h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L6.09 7.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <input id="pWhatsapp"
+       inputmode="numeric"
+       autocomplete="tel"
+       placeholder="Seu número/WhatsApp..."
+       maxlength="15" />
+      </div>
+
+      <div class="pfield">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+          <circle cx="12" cy="12" r="4"></circle>
+          <circle cx="18" cy="6" r="1"></circle>
+        </svg>
+        <input id="pInstagram"
+       inputmode="text"
+       autocomplete="off"
+       autocapitalize="none"
+       spellcheck="false"
+       placeholder="Seu Instagram ID, ex: @seuinstagramid_01"
+       maxlength="30" />
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sideCard">
+        <h2 class="sideTitle">CATEGORIAS</h2>
+        <div class="catList" id="catList"></div>
+      </aside>
+
+      <main>
+        <section class="grid" id="grid"></section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal carrinho -->
+  <div class="backdrop" id="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modalHead">
+        <h3>Seu carrinho</h3>
+        <button class="close" id="closeModal">Fechar</button>
+      </div>
+      <div class="modalBody" id="cartBody"></div>
+      <div class="modalFoot">
+        <div class="couponRow"><input id="couponCode" type="text" placeholder="Cupom de desconto"><button id="applyCoupon">Aplicar</button></div><div class="couponHint" id="couponHint"></div><div class="cartTotals" id="cartTotals"></div>
+      <div class="note">
+          O pedido será enviado no WhatsApp com os itens, tamanho, quantidade e a opção de personalização selecionada.
+          <span class="muted">Depois ajustamos a mensagem padrão.</span>
+        </div>
+        <div class="wa">
+          <input id="clientName" placeholder="Nome da cliente (opcional)" />
+          <button class="checkout" id="checkout">Finalizar no WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
