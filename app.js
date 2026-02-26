@@ -51,9 +51,9 @@ function getFormatIcon(format){
     //    Troque imageUrl e linkUrl quando quiser
     // =========================
     const BANNERS = [
-      { image: "banners/banner1.png", linkUrl: "#" },
-      { image: "banners/banner2.png", linkUrl: "#" },
-      { image: "banners/banner3.png", linkUrl: "#" },
+      { image: "banners/banner1.png", linkUrl: "https://etiquetaseadesivos.github.io/labels/" },
+      { image: "banners/banner2.png", linkUrl: "https://etiquetaseadesivos.github.io/labels/" },
+      { image: "banners/banner3.png", linkUrl: "https://etiquetaseadesivos.github.io/labels/" },
     ];
 
     // =========================
