@@ -1230,7 +1230,7 @@ button, input, select, textarea, option{
 .cartTotals .row strong{ font-weight:900; color:#0f172a; }
 .cartTotals .row.total strong{ font-size:18px; }
 .couponRow{
-  display:flex;
+  /* display:flex; Temporariamente desativado--->*/ display: none;
   gap:10px;
   align-items:center;
   margin:10px 0 12px;
@@ -1534,6 +1534,25 @@ button, input, select, textarea, option{
     border-radius: 20px;     /* mesmo padrão do card lateral */
   }
 
+  @media (max-width: 620px){
+  .personalBar{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .personalBar .label{
+    width: 100%;
+    white-space: normal; /* deixa quebrar em 2 linhas se precisar */
+    padding: 0 6px;
+  }
+
+  .personalBar .pfield{
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}
+
   /* 5) Categorias em “gaveta”: vira faixa horizontal com scroll */
   .sideCard{
     border-radius: 20px;
@@ -1570,3 +1589,5 @@ button, input, select, textarea, option{
     grid-template-columns: 1fr;
   }
 }
+
+.js-material { display: none !important; }
