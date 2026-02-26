@@ -1358,3 +1358,91 @@ button, input, select, textarea, option{
   margin: 10px 0 6px;
   color: #0f172a;
 }
+
+
+
+
+/* =========================
+   MOBILE FIXES (cola no final)
+========================= */
+@media (max-width: 900px){
+
+  /* 1) Topo: logo + carrinho em cima, busca embaixo */
+  .topbar{
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand cart"
+      "search search";
+    row-gap: 12px;
+    align-items: center;
+  }
+  .brand{ grid-area: brand; }
+  .cartCircle{
+    grid-area: cart;
+    justify-self: end;
+    align-self: center;
+    margin: 0; /* remove empurrões */
+  }
+  .search{ grid-area: search; }
+  .search input{ width: 100%; }
+
+  /* 2) Barra de formatos: mantém vertical (se estiver) e ajusta radius */
+  .formatBar{
+    border-radius: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* 3) Banner: altura e radius mais "mobile" */
+  .bannerWrap{
+    border-radius: 18px;
+  }
+  .banner{
+    height: 160px;           /* ajuste se quiser mais alto/baixo */
+    border-radius: 18px;
+  }
+  .banner img{
+    object-fit: cover;
+  }
+
+  /* 4) Barra de personalização: radius igual ao das categorias */
+  .personalBar{
+    border-radius: 20px;     /* mesmo padrão do card lateral */
+  }
+
+  /* 5) Categorias em “gaveta”: vira faixa horizontal com scroll */
+  .sideCard{
+    border-radius: 20px;
+  }
+  .catList{
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .catBtn{
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  /* scrollbar discreta */
+  .catList::-webkit-scrollbar{ height: 6px; }
+  .catList::-webkit-scrollbar-thumb{ border-radius: 999px; }
+}
+
+/* 6) Produtos em 2 colunas no mobile */
+@media (max-width: 620px){
+  .grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* 7) Muito pequeno: volta pra 1 coluna */
+@media (max-width: 420px){
+  .grid{
+    grid-template-columns: 1fr;
+  }
+}
