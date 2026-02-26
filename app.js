@@ -53,13 +53,13 @@ function getFormatIcon(format){
     const BANNERS = [
       { image: "banners/banner1.png", linkUrl: "#" },
       { image: "banners/banner2.png", linkUrl: "#" },
-      { image: "banners/banner1.png", linkUrl: "#" },
+      { image: "banners/banner3.png", linkUrl: "#" },
     ];
 
     // =========================
-    // 3) WhatsApp destino (16) 988350242
+    // 3) WhatsApp destino • Atendimento
     // =========================
-    const WHATSAPP_NUMBER = "5516988350242";
+    const WHATSAPP_NUMBER = "5516993107513";
 
     // =========================
     // 4) REGRAS DE PREÇO (editáveis)
@@ -71,12 +71,13 @@ function getFormatIcon(format){
   sizeMultipliers: { "3x3cm": 1.00, "5x5cm": 1.25, "6x6cm": 1.40, "7x7cm": 1.60 },
   qtyMultipliers:  { "100": 1.35, "500": 1.12, "1000": 1.00 },
 
-  materialMultipliers: {
+/*  materialMultipliers: {
     "Couchê": 1.00,
     "Vinil Brilho": 1.35,
     "Vinil Fosco": 1.35
-  }
+  } */
 },
+
 
       // Exemplo: para editar por categoria, basta criar/chutar valores aqui.
       // category: { "PÁSCOA": { baseUnit: 0.55, qtyMultipliers: { "100":1.45, "500":1.18, "1000":1.00 } } }
@@ -87,10 +88,17 @@ function getFormatIcon(format){
       product: {}
     };
 
+    const FIXED_TOTAL_TABLE = {
+  "3x3cm": { "100": 40.00,  "500": 70.00,  "1000": 90.00  },
+  "4x4cm": { "100": 50.00,  "500": 80.00,  "1000": 160.00 },
+  "5x5cm": { "100": 55.00,  "500": 125.00, "1000": 225.00 },
+  "6x6cm": { "100": 60.00,  "500": 180.00, "1000": 324.00 }
+};
+
     // =========================
     // 5) Opções padrão
     // =========================
-    const DEFAULT_SIZES = ["3x3cm","5x5cm","6x6cm","7x7cm"];
+    const DEFAULT_SIZES = ["3x3cm","4x4cm","5x5cm","6x6cm"];
     const DEFAULT_QTYS  = ["100","500","1000"];
     const DEFAULT_MATERIALS = ["Couchê", "Vinil Brilho", "Vinil Fosco"];
 
@@ -697,6 +705,11 @@ function getFormatIcon(format){
   return { intBR, dec: "," + decPart };
 }
 
+function setBudgetPlaceholder(el){
+  el.innerHTML = `<span class="cur">R$</span><span class="num">--</span><span class="dec">,--</span>`;
+  el.style.fontSize = ""; // reseta o auto-fit quando volta pro placeholder
+}
+
 function setBudgetValue(el, value){
   const { intBR, dec } = pricePartsBR(value);
   el.innerHTML = `<span class="cur">R$</span><span class="num">${intBR}</span><span class="dec">${dec}</span>`;
@@ -792,22 +805,32 @@ function getDiscountPercent(p){
   return DISCOUNTS.globalPercent || 0;
 }
 
-function getUnitPrice(product, sizeValue, qtyValue, materialValue){
+function getUnitPrice(product, sizeValue, qtyValue){
+  const q = parseInt(qtyValue, 10) || 0;
+
+  // 1) Usa tabela fixa
+  const fixedTotal = FIXED_TOTAL_TABLE?.[sizeValue]?.[qtyValue];
+  if(typeof fixedTotal === "number" && q > 0){
+    const disc = getDiscountPercent(product);
+    const unit = fixedTotal / q;
+    return Math.max(0, unit * (1 - (disc/100)));
+  }
+
+  // 2) fallback antigo (caso algum tamanho não esteja na tabela)
   const rule = getMergedRule(product);
   const sizeMul = rule.sizeMultipliers?.[sizeValue] ?? 1.0;
   const qtyMul  = rule.qtyMultipliers?.[qtyValue] ?? 1.0;
-  const matMul  = rule.materialMultipliers?.[materialValue] ?? 1.0;
 
-  const raw = rule.baseUnit * sizeMul * qtyMul * matMul;
+  const raw = rule.baseUnit * sizeMul * qtyMul;
   const disc = getDiscountPercent(product);
   const final = raw * (1 - (disc/100));
   return Math.max(0, final);
 }
 
-    function getTotalPrice(product, sizeValue, qtyValue, materialValue){
-  const unit = getUnitPrice(product, sizeValue, qtyValue, materialValue);
+function getTotalPrice(product, sizeValue, qtyValue){
   const q = parseInt(qtyValue, 10) || 0;
-  return unit * q;
+  const unit = getUnitPrice(product, sizeValue, qtyValue);
+  return Math.max(0, unit * q);
 }
 
     // =========================
@@ -968,26 +991,52 @@ b.innerHTML = `
     }
 
 
-    function requirePersonalizationFields(){
-  const w = el("pWhatsapp");
-  const i = el("pInstagram");
+function requirePersonalizationFields(card){
+  // topo (existem no layout)
+  const wTop = el("pWhatsapp");
+  const iTop = el("pInstagram");
 
-  const whatsappOk = (w.value || "").trim().length >= 14; // (16) 99999-9999 -> 15 chars
-  const instaOk = (i.value || "").trim().length > 0;
+  // campos do card clicado
+  const wCard = card?.querySelector(".js-pw-input");
+  const iCard = card?.querySelector(".js-pi-input");
+
+  // valida pelo topo (ou state, tanto faz porque você sincroniza)
+  const whatsappOk = (wTop?.value || "").trim().length >= 14;
+  const instaOk = (iTop?.value || "").trim().length > 0;
 
   if(whatsappOk && instaOk) return true;
 
-  // scroll até os campos (topo)
-  w.scrollIntoView({ behavior: "smooth", block: "center" });
+  // SEM SCROLL: só foco sem puxar a tela
+  const firstMissing =
+    !whatsappOk ? (wCard || wTop) :
+    !instaOk ? (iCard || iTop) :
+    null;
 
-  // destaca os que estão faltando
-  if(!whatsappOk) w.classList.add("needAttention");
-  if(!instaOk) i.classList.add("needAttention");
+  if(firstMissing){
+    try { firstMissing.focus({ preventScroll: true }); }
+    catch { firstMissing.focus(); }
+  }
 
-  // remove destaque depois de um tempo
+  // aplica o brilho azul igual (topo + card do produto)
+  const mark = (el) => { if(el) el.classList.add("needAttention"); };
+  const unmark = (el) => { if(el) el.classList.remove("needAttention"); };
+
+  if(!whatsappOk){
+    mark(wTop);
+    mark(wCard);
+    mark(wCard?.closest(".pfield"));
+  }
+  if(!instaOk){
+    mark(iTop);
+    mark(iCard);
+    mark(iCard?.closest(".pfield"));
+  }
+
   setTimeout(() => {
-    w.classList.remove("needAttention");
-    i.classList.remove("needAttention");
+    unmark(wTop); unmark(iTop);
+    unmark(wCard); unmark(iCard);
+    unmark(wCard?.closest(".pfield"));
+    unmark(iCard?.closest(".pfield"));
   }, 1800);
 
   return false;
@@ -1041,8 +1090,8 @@ function canAutoSelectYes(){
         const sizeOptions = p.sizeOptions?.length ? p.sizeOptions : DEFAULT_SIZES;
         const qtyOptions  = p.qtyOptions?.length ? p.qtyOptions : DEFAULT_QTYS;
 
-        const rule = getMergedRule(p);
-        const fromText = moneyBR(rule.baseUnit);
+        const PLACEHOLDER_BUDGET_HTML = `<span class="cur">R$</span><span class="num">--</span><span class="dec">,--</span>`;
+
 
         card.innerHTML = `
   <div class="thumb">
@@ -1077,8 +1126,8 @@ function canAutoSelectYes(){
 
   <div class="protoRight">
     <div class="budgetBox">
-      <div class="budgetLabel js-budget-label">A partir de:</div>
-      <div class="budgetValue js-budget-value">${fromText}</div>
+      <div class="budgetLabel js-budget-label">Orçamento:</div>
+      <div class="budgetValue js-budget-value">${PLACEHOLDER_BUDGET_HTML}</div>
       <div class="budgetHint js-budget-hint"></div>
     </div>
 
@@ -1142,7 +1191,7 @@ function canAutoSelectYes(){
 
         const sizeSel = card.querySelector(".js-size");
         const qtySel  = card.querySelector(".js-qty");
-        const matSel  = card.querySelector(".js-material");
+       /* const matSel  = card.querySelector(".js-material"); */
         
         const budgetLabel = card.querySelector(".js-budget-label");
         const budgetValue = card.querySelector(".js-budget-value");
@@ -1152,22 +1201,28 @@ function canAutoSelectYes(){
         function updateBudget(){
           const s = sizeSel.value;
           const q = qtySel.value;
-          const m = matSel.value;
+        /*  const m = matSel.value;*/
 
           const persSelected = card.querySelector(`input[name="pers_${p.id}"]:checked`)?.value || "";
 
           // pulsar quando estiver tudo preenchido
           if(s && q && persSelected){ addBtn.classList.add("pulse"); }
           else{ addBtn.classList.remove("pulse"); }
-
-          if(!s || !q || !m){
-            budgetLabel.textContent = "A partir de:";
-            setBudgetValue(budgetValue, getMergedRule(p).baseUnit);
-            budgetHint.textContent = "";
-            return;
+           
+          if(persSelected === "Sim"){
+            const card = addBtn.closest(".card");
+            if(card && !requirePersonalizationFields(card)) return;
           }
 
-          const total = getTotalPrice(p, s, q, m);
+          if(!s || !q){
+              budgetLabel.textContent = "Orçamento:";
+              setBudgetPlaceholder(budgetValue);
+              budgetHint.textContent = "";
+              return;
+            }
+
+
+          const total = getTotalPrice(p, s, q);
           budgetLabel.textContent = "Orçamento:";
           setBudgetValue(budgetValue, total);
           budgetHint.textContent = ""; // reservado se você quiser mostrar unitário depois
@@ -1203,22 +1258,34 @@ qtySel.onchange = () => {
   updateBudget(); // <-- recalcula e atualiza botão pulse
 };
 
-matSel.onchange = () => {
+/* matSel.onchange = () => {
   if(matSel.value){
     card.dataset.started = "1";
     autoSelectYesIfAllowed();
-  }
+  } 
   updateBudget();
-};
-        card.querySelectorAll(`input[name="pers_${p.id}"]`).forEach(r => {
+}; */
+card.querySelectorAll(`input[name="pers_${p.id}"]`).forEach(r => {
+
+  // 1) trava o clique no "Sim" antes de mudar
+  r.addEventListener("click", (ev) => {
+    if(ev.target.value !== "Sim") return;
+
+    if(!requirePersonalizationFields(card)){
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+  });
+
+  // 2) change só para atualizar UI (orçamento)
   r.addEventListener("change", (ev) => {
     if(ev.target.value === "Sim"){
-      card.dataset.started = "1"; // <-- adiciona isso aqui
-
-      if(!requirePersonalizationFields()){
+      // só seta started se passou na validação (garantia extra)
+      if(!requirePersonalizationFields(card)){
         ev.target.checked = false;
         return;
       }
+      card.dataset.started = "1";
     }
     updateBudget();
   });
@@ -1227,18 +1294,18 @@ matSel.onchange = () => {
 addBtn.onclick = () => {
   const s = sizeSel.value;
   const q = qtySel.value;
-  const m = matSel.value;
+/*  const m = matSel.value; */
 
-  if(!s || !q || !m){
-    alert("Selecione tamanho, quantidade e material.");
+  if(!s || !q){
+    alert("Selecione tamanho e quantidade.");
     return;
   }
 
   const pers = card.querySelector(`input[name="pers_${p.id}"]:checked`)?.value || "";
-  const unit = getUnitPrice(p, s, q, m);
-  const total = getTotalPrice(p, s, q, m);
+  const unit = getUnitPrice(p, s, q);
+  const total = getTotalPrice(p, s, q);
 
-  const cartKey = `${p.id}__${s}__${q}__${m}__${pers || "NA"}`;
+  const cartKey = `${p.id}__${s}__${q}__${pers || "NA"}`;
 
   state.cart[cartKey] = {
     key: cartKey,
@@ -1248,7 +1315,7 @@ addBtn.onclick = () => {
     category: p.category,
     size: s,
     qty: parseInt(q, 10),
-    material: m,
+  /*  material: m, */
     personalize: pers, // "Sim" | "Não" | ""
     unitPrice: unit,
     totalPrice: total,
@@ -1274,7 +1341,7 @@ addBtn.onclick = () => {
   setTimeout(() => {
     sizeSel.value = "";
     qtySel.value = "";
-    matSel.value = "";
+  /*  matSel.value = ""; */
 
     card.querySelectorAll(`input[name="pers_${p.id}"]`).forEach(r => r.checked = false);
     card.dataset.started = "0";
@@ -1384,7 +1451,7 @@ if(totalEl) totalEl.textContent = moneyBR(total);
           </div>
 
           <div class="cartLine1">
-            ${String(i.size).toUpperCase()} • ${i.qty} UNID • ${i.material}
+            ${String(i.size).toUpperCase()} • ${i.qty} UNID
           </div>
 
           ${
@@ -1501,30 +1568,34 @@ function setCouponHint(msg){
 
 
 
-    function buildWhatsAppMessage(){
-      const items = Object.values(state.cart);
-      const name = el("clientName").value.trim();
+function buildWhatsAppMessage(){
+  const items = Object.values(state.cart);
 
-      const lines = [];
-      lines.push("Olá! Quero fazer um pedido pelo catálogo:");
-      if(name) lines.push(`Nome: ${name}`);
-      if(state.pWhatsapp) lines.push(`WhatsApp informado: ${state.pWhatsapp}`);
-      if(state.pInstagram) lines.push(`Instagram informado: ${state.pInstagram}`);
-      lines.push("");
+  const lines = [];
+  lines.push("Olá! Gostaria de solicitar um orçamento de rótulos:");
+  lines.push("");
 
-      items.forEach(i => {
-        const pers = i.personalize ? ` | Personalização: ${i.personalize}` : "";
-        lines.push(`• ${i.name} | ${i.category} / ${i.format} | ${i.size} | ${i.qty} unid.${pers} | Total: ${moneyBR(i.totalPrice)}`);
-      });
+  items.forEach(i => {
+    lines.push(`• ${i.name}`);
+    if(i.ref) lines.push(`• REF: ${i.ref}`);
+    lines.push(`Tamanho: ${i.size}`);
+    lines.push(`Quantidade: ${i.qty}`);
+    lines.push(`Valor: ${moneyBR(i.totalPrice)}`);
+    if(i.personalize) lines.push(`Personalização: ${i.personalize}`);
+    lines.push("");
+  });
 
-      const totals = calcCartTotals();
-      lines.push("");
-      if(totals.code) lines.push(`Cupom: ${totals.code}`);
-      lines.push(`Total do pedido: ${moneyBR(totals.total)}`);
-      lines.push("");
-      lines.push("Pode me orientar sobre o próximo passo?");
-      return encodeURIComponent(lines.join("\n"));
-    }
+  // WhatsApp e Instagram sempre no final
+  if(state.pWhatsapp) lines.push(`WhatsApp: ${state.pWhatsapp}`);
+  if(state.pInstagram) lines.push(`Instagram: ${state.pInstagram}`);
+
+  lines.push("");
+
+  const totals = calcCartTotals();
+  lines.push(`Valor total do pedido: ${moneyBR(totals.total)}`);
+
+  return encodeURIComponent(lines.join("\n"));
+}
 
     function openWhatsApp(){
       const items = Object.values(state.cart);
