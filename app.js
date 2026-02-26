@@ -1093,20 +1093,29 @@ function canAutoSelectYes(){
   </div>
 </div>
 
-    <div class="personalCard">
-      <p class="pTitle">Deseja personalizar com seu:</p>
+<div class="personalTitle">Deseja personalizar com suas informações?</div>
 
-      <div class="pRow">
-        <img class="pIcon" src="${ASSETS.iconWhatsapp}" alt="WhatsApp">
-        <input class="pInlineInput js-pw-input" inputmode="numeric" autocomplete="tel" maxlength="15"
-               placeholder="(00) 00000-0000" value="${state.pWhatsapp || ""}">
-      </div>
+<div class="personalCard">
+  <div class="pfield pfield--mini">
+    <img class="pIco" src="${ASSETS.iconWhatsapp}" alt="WhatsApp">
+    <input class="js-pw-input"
+      inputmode="numeric"
+      autocomplete="tel"
+      placeholder="(00) 00000-0000"
+      maxlength="15" />
+  </div>
 
-      <div class="pRow">
-        <img class="pIcon" src="${ASSETS.iconInstagram}" alt="Instagram">
-        <input class="pInlineInput js-pi-input" autocapitalize="none" autocomplete="off" spellcheck="false"
-               placeholder="seuinstagram" value="${state.pInstagram || ""}">
-      </div>
+  <div class="pfield pfield--mini">
+    <img class="pIco" src="${ASSETS.iconInstagram}" alt="Instagram">
+    <input class="js-pi-input"
+      inputmode="text"
+      autocomplete="off"
+      autocapitalize="none"
+      spellcheck="false"
+      placeholder="seuinstagram"
+      maxlength="30" />
+  </div>
+</div>
 
       <div class="pChoice">
         <label class="radio">
@@ -1276,27 +1285,63 @@ addBtn.onclick = () => {
 };
         
 
-        // Atualiza textos de personalização (topo) dentro do card
-        const pwInputInline = card.querySelector(".js-pw-input");
-        const piInputInline = card.querySelector(".js-pi-input");
-        if(pwInputInline){
-          pwInputInline.value = state.pWhatsapp || "";
-          pwInputInline.addEventListener("input", (e) => {
-            state.pWhatsapp = applyWhatsappMask(e.target.value);
-            syncPersonalFields();
-            // se o cliente começou a configurar o produto, já marca "Sim"
-            if(card.dataset.started === "1") autoMarkSimIfPossible(card, p.id);
-          });
-        }
-        if(piInputInline){
-          piInputInline.value = state.pInstagram || "";
-          piInputInline.addEventListener("input", (e) => {
-            state.pInstagram = normalizeInstagram(e.target.value);
-            e.target.value = state.pInstagram;
-            syncPersonalFields();
-            if(card.dataset.started === "1") autoMarkSimIfPossible(card, p.id);
-          });
-        }
+// ===== Personalização (topo e cards) - sincronização total =====
+const pwTop = el("pWhatsapp");
+const igTop = el("pInstagram");
+
+function syncAllPersonalFields(){
+  // topo
+  if (pwTop && pwTop.value !== state.pWhatsapp) pwTop.value = state.pWhatsapp || "";
+  if (igTop && igTop.value !== state.pInstagram) igTop.value = state.pInstagram || "";
+
+  // todos os cards
+  document.querySelectorAll(".js-pw-input").forEach(inp => {
+    if (inp.value !== (state.pWhatsapp || "")) inp.value = state.pWhatsapp || "";
+  });
+  document.querySelectorAll(".js-pi-input").forEach(inp => {
+    if (inp.value !== (state.pInstagram || "")) inp.value = state.pInstagram || "";
+  });
+
+  // previews (se você ainda usa em algum lugar)
+  document.querySelectorAll(".js-pw").forEach(t => t.textContent = state.pWhatsapp ? state.pWhatsapp : "---");
+  document.querySelectorAll(".js-pi").forEach(t => t.textContent = state.pInstagram ? state.pInstagram : "---");
+}
+
+function setWhatsappFromAnyInput(raw){
+  const v = formatBRPhone(raw);     // <-- FUNÇÃO CERTA no seu app.js
+  state.pWhatsapp = v;
+  syncAllPersonalFields();
+}
+
+function setInstagramFromAnyInput(raw){
+  const v = normalizeInstagramId(raw); // já existe no seu app.js
+  state.pInstagram = v;
+  syncAllPersonalFields();
+}
+
+// topo -> todos
+if(pwTop && !pwTop.dataset.bound){
+  pwTop.dataset.bound = "1";
+  pwTop.addEventListener("input", () => setWhatsappFromAnyInput(pwTop.value));
+}
+if(igTop && !igTop.dataset.bound){
+  igTop.dataset.bound = "1";
+  igTop.addEventListener("input", () => setInstagramFromAnyInput(igTop.value));
+}
+
+// card atual -> todos
+const pwCard = card.querySelector(".js-pw-input");
+const igCard = card.querySelector(".js-pi-input");
+
+if(pwCard){
+  pwCard.addEventListener("input", () => setWhatsappFromAnyInput(pwCard.value));
+}
+if(igCard){
+  igCard.addEventListener("input", () => setInstagramFromAnyInput(igCard.value));
+}
+
+// ao criar o card, já puxa o valor atual do estado
+syncAllPersonalFields();
 
         grid.appendChild(card);
       });
@@ -1316,6 +1361,11 @@ function renderCart(){
   }
 
   body.innerHTML = items.map(i => {
+
+    // Atualiza total do carrinho (NOVO)
+const total = Object.values(state.cart).reduce((acc, item) => acc + (item.totalPrice || 0), 0);
+const totalEl = el("cartTotalValue");
+if(totalEl) totalEl.textContent = moneyBR(total);
 
     const personalize = i.personalize || "Não";
 
@@ -1497,11 +1547,23 @@ function setCouponHint(msg){
       el("backdrop").setAttribute("aria-hidden", "true");
     }
 
-    // Personalização (topo)
-    function syncPersonalizationToCards(){
-      document.querySelectorAll(".js-pw").forEach(n => { n.textContent = state.pWhatsapp ? state.pWhatsapp : "( ) ____"; });
-      document.querySelectorAll(".js-pi").forEach(n => { n.textContent = state.pInstagram ? state.pInstagram : "@____"; });
-    }
+function syncPersonalizationToCards(){
+  // Atualiza previews antigos (se ainda existirem)
+  document.querySelectorAll(".js-pw").forEach(elm => {
+    elm.textContent = state.pWhatsapp ? state.pWhatsapp : "---";
+  });
+  document.querySelectorAll(".js-pi").forEach(elm => {
+    elm.textContent = state.pInstagram ? state.pInstagram : "---";
+  });
+
+  // Atualiza inputs dentro dos cards (NOVO)
+  document.querySelectorAll(".js-pw-input").forEach(inp => {
+    if (document.activeElement !== inp) inp.value = state.pWhatsapp ? state.pWhatsapp : "";
+  });
+  document.querySelectorAll(".js-pi-input").forEach(inp => {
+    if (document.activeElement !== inp) inp.value = state.pInstagram ? state.pInstagram : "";
+  });
+}
 
     // Init
     el("logoImg").src = ASSETS.logoUrl;
