@@ -1303,3 +1303,58 @@ button, input, select, textarea, option{
   background:transparent;
   font:inherit;
 }
+
+.cartTotals{
+  display:flex;
+  justify-content:flex-end;
+  margin: 10px 0 12px;
+}
+.cartTotalsRow{
+  display:flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16px;
+  font-weight:800;
+}
+#cartTotalValue{
+  font-size: 20px;
+}
+
+/* Inputs dentro do card (personalização) */
+.personalCard .pfield--mini{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#fff;
+  border:1px solid #cfd9e4;
+  border-radius:14px;
+  padding:10px 12px;
+  margin-top:8px;
+}
+
+.personalCard .pfield--mini .pIco{
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  opacity:.9;
+}
+
+.personalCard .pfield--mini input{
+  width:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  font:inherit;
+  color:#1c2430;
+}
+
+.personalCard .pfield--mini input::placeholder{
+  color:#8a97a8;
+}
+
+.personalTitle{
+  font-weight: 800;
+  font-size: 14px;
+  margin: 10px 0 6px;
+  color: #0f172a;
+}
