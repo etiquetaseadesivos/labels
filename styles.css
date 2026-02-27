@@ -1648,7 +1648,6 @@ html, body { overflow-x: hidden; }
 }
 
 @media (max-width: 420px){
-  .grid{ grid-template-columns: 1fr; }
   .brand img{ height: 44px; }
 }
 
