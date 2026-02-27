@@ -53,17 +53,17 @@ function getFormatIcon(format){
     const BANNERS = [
   {
     imageDesktop: "banners/banner1-desktop.png",
-    imageMobile: "banners/banner2-mobile.png",
+    imageMobile: "banners/banner1-mobile.png",
     linkUrl: "#"
   },
   {
     imageDesktop: "banners/banner2-desktop.png",
-    imageMobile: "banners/banner3-mobile.png",
+    imageMobile: "banners/banner2-mobile.png",
     linkUrl: "#"
   },
   {
     imageDesktop: "banners/banner3-desktop.png",
-    imageMobile: "banners/banner2-mobile.png",
+    imageMobile: "banners/banner3-mobile.png",
     linkUrl: "#"
   }
 ];
