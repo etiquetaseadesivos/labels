@@ -1340,6 +1340,10 @@ button, input, select, textarea, option {
     align-items: center;
   }
 
+  .tab {
+    font-size: 13px;
+  } 
+
   .brand {
     grid-area: brand;
   }
@@ -1372,7 +1376,6 @@ button, input, select, textarea, option {
     flex-wrap: wrap;
     align-content: stretch;
     align-items: baseline;
-    padding: 5px;
   }
 
   .thumb img {
