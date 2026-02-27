@@ -51,15 +51,27 @@ function getFormatIcon(format){
     //    Troque imageUrl e linkUrl quando quiser
     // =========================
     const BANNERS = [
-      { image: "banners/banner1.png", linkUrl: "https://etiquetaseadesivos.github.io/labels/" },
-      { image: "banners/banner2.png", linkUrl: "https://etiquetaseadesivos.github.io/labels/" },
-      { image: "banners/banner3.png", linkUrl: "https://etiquetaseadesivos.github.io/labels/" },
-    ];
+  {
+    imageDesktop: "banners/banner1-desktop.png",
+    imageMobile: "banners/banner2-mobile.png",
+    linkUrl: "#"
+  },
+  {
+    imageDesktop: "banners/banner2-desktop.png",
+    imageMobile: "banners/banner3-mobile.png",
+    linkUrl: "#"
+  },
+  {
+    imageDesktop: "banners/banner3-desktop.png",
+    imageMobile: "banners/banner2-mobile.png",
+    linkUrl: "#"
+  }
+];
 
     // =========================
     // 3) WhatsApp destino • Atendimento
     // =========================
-    const WHATSAPP_NUMBER = "5516993107513";
+    const WHATSAPP_NUMBER = "5516992882931";
 
     // =========================
     // 4) REGRAS DE PREÇO (editáveis)
@@ -902,17 +914,20 @@ function playCardAddFx(card, originEl){
   fx.classList.remove("is-off");
   fx.classList.add("is-on");
 
-  // fase de saída
+const FX_VISIBLE_TIME = 3000;   // tempo do check + texto
+const FX_FADE_TIME = 1800;      // tempo da animação de saída
+const FX_BUFFER = 300;
+
 setTimeout(() => {
   fx.classList.remove("is-on");
   fx.classList.add("is-off");
-}, 1400);
+}, FX_VISIBLE_TIME);
 
 setTimeout(() => {
   fx.classList.remove("is-off");
   fx.style.removeProperty("--fx-x");
   fx.style.removeProperty("--fx-y");
-}, 1400 + 1800 + 300); // ~3500
+}, FX_VISIBLE_TIME + FX_FADE_TIME + FX_BUFFER);
 }
 
     // =========================
@@ -971,14 +986,35 @@ b.innerHTML = `
       });
     }
 
-    function setBanner(idx){
-      if(!BANNERS.length) return;
-      state.bannerIndex = (idx + BANNERS.length) % BANNERS.length;
-      const b = BANNERS[state.bannerIndex];
-      el("bannerImg").src = b.image || ASSETS.placeholderBanner;
-      el("bannerLink").href = b.linkUrl || "#";
-      renderBannerDots();
-    }
+function setBanner(idx){
+  if(!BANNERS.length) return;
+
+  state.bannerIndex = (idx + BANNERS.length) % BANNERS.length;
+  const b = BANNERS[state.bannerIndex];
+
+  const img = el("bannerImg");
+  const link = el("bannerLink");
+
+  img.classList.add("is-fading");
+
+  const isMobile = window.innerWidth <= 768;
+  const newSrc =
+    (isMobile ? b.imageMobile : b.imageDesktop) ||
+    b.image ||
+    ASSETS.placeholderBanner;
+
+  link.href = b.linkUrl || "#";
+
+  setTimeout(() => {
+    img.onload = () => img.classList.remove("is-fading");
+    img.src = newSrc;
+
+    // fallback por cache
+    setTimeout(() => img.classList.remove("is-fading"), 450);
+  }, 60);
+
+  renderBannerDots();
+}
 
     function nextBanner(){ setBanner(state.bannerIndex + 1); }
     function prevBanner(){ setBanner(state.bannerIndex - 1); }
@@ -990,6 +1026,52 @@ b.innerHTML = `
       bannerTimer = setInterval(nextBanner, 5000);
     }
 
+
+function initBannerSwipe(){
+  const banner = el("banner");
+  if(!banner) return;
+
+  let startX = 0;
+  let startY = 0;
+  let dragging = false;
+
+  const THRESHOLD = 50; // px para considerar swipe
+
+  banner.addEventListener("touchstart", (e) => {
+    if(!e.touches || e.touches.length !== 1) return;
+    dragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  banner.addEventListener("touchmove", (e) => {
+    if(!dragging || !e.touches || e.touches.length !== 1) return;
+
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+
+    // se o movimento for mais horizontal do que vertical, impede o scroll da página
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10){
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  banner.addEventListener("touchend", (e) => {
+    if(!dragging) return;
+    dragging = false;
+
+    const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : startX;
+    const dx = endX - startX;
+
+    if(Math.abs(dx) < THRESHOLD) return;
+
+    if(dx < 0) nextBanner();
+    else prevBanner();
+
+    startBannerAuto(); // reinicia o timer depois do swipe
+  }, { passive: true });
+}
+    
 
 function requirePersonalizationFields(card){
   // topo (existem no layout)
@@ -1182,10 +1264,11 @@ function canAutoSelectYes(){
   <div class="cardFx" aria-hidden="true">
   <span class="fx-fill"></span>
   <span class="fx-check">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 6L9 17l-5-5"></path>
-    </svg>
-  </span>
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 6L9 17l-5-5"></path>
+  </svg>
+  <div class="fx-text">Adicionado ao Carrinho</div>
+</span>
 </div>
 `;
 
@@ -1643,6 +1726,7 @@ function syncPersonalizationToCards(){
     renderCategorias();
 
     setBanner(0);
+    initBannerSwipe();
     el("bannerPrev").onclick = prevBanner;
     el("bannerNext").onclick = nextBanner;
     startBannerAuto();
