@@ -1560,12 +1560,6 @@ button, input, select, textarea, option {
 
 }
 
-@media (max-width: 420px) {
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
 }
 
 .js-material {
