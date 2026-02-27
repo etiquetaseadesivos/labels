@@ -24,6 +24,8 @@ body {
   font-family: "Nunito", sans-serif !important;
 }
 
+.js-material{ display:none !important; }
+
 .wrap {
   max-width: 1200px;
   margin: 0 auto;
@@ -470,7 +472,7 @@ input::placeholder {
 
 .modalBody {
   padding: 12px 16px 16px;
-  max-height: 60vh;
+  max-height: 40vh;
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -547,29 +549,31 @@ input::placeholder {
 }
 
 .wa {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
 }
 
 .wa input {
-  width: 220px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  outline: none;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    outline: none;
 }
 
 .wa .checkout {
-  border: 0;
-  background: var(--brand);
-  color: #fff;
-  font-weight: 900;
-  padding: 12px 14px;
-  border-radius: 14px;
-  cursor: pointer;
-  min-width: 220px;
+    border: 0;
+    background: var(--brand);
+    color: #fff;
+    font-weight: 900;
+    padding: 12px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    min-width: 100%;
 }
 
 .empty {
@@ -1278,7 +1282,6 @@ button, input, select, textarea, option {
   margin-bottom: 10px;
   display: flex;
   justify-content: flex-end;
-  margin: 10px 0 12px;
 }
 
 .cartTotalsRow {
@@ -1340,9 +1343,6 @@ button, input, select, textarea, option {
     align-items: center;
   }
 
-  .tab {
-    font-size: 13px;
-  } 
 
   .brand {
     grid-area: brand;
@@ -1565,9 +1565,7 @@ button, input, select, textarea, option {
 
 }
 
-.js-material {
-  display: none !important;
-}
+
 
 
 
