@@ -1680,26 +1680,39 @@ function buildWhatsAppMessage(){
   return encodeURIComponent(lines.join("\n"));
 }
 
-    function openWhatsApp(){
-      const items = Object.values(state.cart);
-      if(items.length === 0){
-        alert("Seu carrinho está vazio.");
-        return;
-      }
-      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
-      window.open(url, "_blank");
-    }
+function openWhatsApp(){
+  const items = Object.values(state.cart);
+  if(items.length === 0){
+    alert("Seu carrinho está vazio.");
+    return;
+  }
 
-    // Modal
-    function openModal(){
-      el("backdrop").style.display = "flex";
-      el("backdrop").setAttribute("aria-hidden", "false");
-      renderCart();
+  // ===== Meta Pixel: evento ao clicar em "Enviar Orçamento" =====
+  try{
+    if(typeof fbq === "function"){
+      const totals = calcCartTotals();
+      fbq("track", "Contact", {
+        content_name: "Orçamento de rótulos",
+        value: totals.total,
+        currency: "BRL"
+      });
     }
-    function closeModal(){
-      el("backdrop").style.display = "none";
-      el("backdrop").setAttribute("aria-hidden", "true");
-    }
+  }catch(e){}
+
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
+  window.open(url, "_blank");
+}
+
+// Modal
+function openModal(){
+  el("backdrop").style.display = "flex";
+  el("backdrop").setAttribute("aria-hidden", "false");
+  renderCart();
+}
+function closeModal(){
+  el("backdrop").style.display = "none";
+  el("backdrop").setAttribute("aria-hidden", "true");
+}
 
 function syncPersonalizationToCards(){
   // Atualiza previews antigos (se ainda existirem)
@@ -1712,57 +1725,57 @@ function syncPersonalizationToCards(){
 
   // Atualiza inputs dentro dos cards (NOVO)
   document.querySelectorAll(".js-pw-input").forEach(inp => {
-    if (document.activeElement !== inp) inp.value = state.pWhatsapp ? state.pWhatsapp : "";
+    if(document.activeElement !== inp) inp.value = state.pWhatsapp ? state.pWhatsapp : "";
   });
   document.querySelectorAll(".js-pi-input").forEach(inp => {
-    if (document.activeElement !== inp) inp.value = state.pInstagram ? state.pInstagram : "";
+    if(document.activeElement !== inp) inp.value = state.pInstagram ? state.pInstagram : "";
   });
 }
 
-    // Init
-    el("logoImg").src = ASSETS.logoUrl;
+// Init
+el("logoImg").src = ASSETS.logoUrl;
 
-    renderFormatTabs();
-    renderCategorias();
+renderFormatTabs();
+renderCategorias();
 
-    setBanner(0);
-    initBannerSwipe();
-    el("bannerPrev").onclick = prevBanner;
-    el("bannerNext").onclick = nextBanner;
-    startBannerAuto();
+setBanner(0);
+initBannerSwipe();
+el("bannerPrev").onclick = prevBanner;
+el("bannerNext").onclick = nextBanner;
+startBannerAuto();
 
-    renderGrid();
-    setCartCount();
-    renderCart();
+renderGrid();
+setCartCount();
+renderCart();
 
-    el("search").addEventListener("input", (e) => {
-      state.query = e.target.value;
-      renderGrid();
-    });
+el("search").addEventListener("input", (e) => {
+  state.query = e.target.value;
+  renderGrid();
+});
 
-    el("cartBtn").onclick = openModal;
-    el("closeModal").onclick = closeModal;
-    el("backdrop").addEventListener("click", (e) => {
-      if(e.target === el("backdrop")) closeModal();
-    });
+el("cartBtn").onclick = openModal;
+el("closeModal").onclick = closeModal;
+el("backdrop").addEventListener("click", (e) => {
+  if(e.target === el("backdrop")) closeModal();
+});
 
-    el("checkout").onclick = openWhatsApp;
+// botão do modal: Enviar Orçamento
+el("checkout").onclick = openWhatsApp;
 
-    // Cupom
-    const couponInput = document.getElementById("couponCode");
-    const couponBtn = document.getElementById("applyCoupon");
-    if(couponInput){
-      couponInput.addEventListener("input", (e) => {
-        // só guarda, não aplica automaticamente
-        state.couponCode = e.target.value;
-      });
-    }
-    if(couponBtn){
-      couponBtn.onclick = () => {
-        tryApplyCoupon(couponInput ? couponInput.value : state.couponCode);
-      };
-    }
-
+// Cupom
+const couponInput = document.getElementById("couponCode");
+const couponBtn = document.getElementById("applyCoupon");
+if(couponInput){
+  couponInput.addEventListener("input", (e) => {
+    // só guarda, não aplica automaticamente
+    state.couponCode = e.target.value;
+  });
+}
+if(couponBtn){
+  couponBtn.onclick = () => {
+    tryApplyCoupon(couponInput ? couponInput.value : state.couponCode);
+  };
+}
 
 el("pWhatsapp").addEventListener("input", (e) => {
   const formatted = formatBRPhone(e.target.value);
