@@ -1715,6 +1715,22 @@ function openWhatsApp(){
 
 // Modal
 function openModal(){
+  // ===== Meta Pixel: InitiateCheckout =====
+  try{
+    if(typeof fbq === "function"){
+      const totals = calcCartTotals();
+      fbq("track", "InitiateCheckout", {
+        value: totals.total,
+        currency: "BRL",
+        num_items: Object.keys(state.cart).length
+      });
+    }
+  }catch(e){}
+
+  el("backdrop").style.display = "flex";
+  el("backdrop").setAttribute("aria-hidden", "false");
+  renderCart();
+}
 
 function closeModal(){
   el("backdrop").style.display = "none";
