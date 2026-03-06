@@ -1377,7 +1377,7 @@ card.querySelectorAll(`input[name="pers_${p.id}"]`).forEach(r => {
 addBtn.onclick = () => {
   const s = sizeSel.value;
   const q = qtySel.value;
-/*  const m = matSel.value; */
+  /* const m = matSel.value; */
 
   if(!s || !q){
     alert("Selecione tamanho e quantidade.");
@@ -1398,18 +1398,30 @@ addBtn.onclick = () => {
     category: p.category,
     size: s,
     qty: parseInt(q, 10),
-  /*  material: m, */
-    personalize: pers, // "Sim" | "Não" | ""
+    /* material: m, */
+    personalize: pers,
     unitPrice: unit,
     totalPrice: total,
     image: p.image || ASSETS.placeholderLabel,
     ref: p.ref || "",
   };
 
+  // ===== Meta Pixel: AddToCart =====
+  try{
+    if(typeof fbq === "function"){
+      fbq("track", "AddToCart", {
+        content_name: p.name,
+        content_ids: [p.ref || p.id],
+        content_type: "product",
+        value: total,
+        currency: "BRL"
+      });
+    }
+  }catch(e){}
+
   setCartCount();
   renderCart();
 
-  // bump no contador do carrinho
   const badge = document.querySelector("#cartCount");
   if(badge){
     badge.classList.remove("bump");
@@ -1417,14 +1429,12 @@ addBtn.onclick = () => {
     badge.classList.add("bump");
   }
 
-  // FX no card inteiro (overlay)
   playCardAddFx(card, addBtn);
 
-  // reset do produto após o FX (um único reset, sem duplicar)
   setTimeout(() => {
     sizeSel.value = "";
     qtySel.value = "";
-  /*  matSel.value = ""; */
+    /* matSel.value = ""; */
 
     card.querySelectorAll(`input[name="pers_${p.id}"]`).forEach(r => r.checked = false);
     card.dataset.started = "0";
@@ -1705,10 +1715,7 @@ function openWhatsApp(){
 
 // Modal
 function openModal(){
-  el("backdrop").style.display = "flex";
-  el("backdrop").setAttribute("aria-hidden", "false");
-  renderCart();
-}
+
 function closeModal(){
   el("backdrop").style.display = "none";
   el("backdrop").setAttribute("aria-hidden", "true");
